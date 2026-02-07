@@ -46,6 +46,10 @@ export interface DataSummary {
   top_suppliers: { key: string; units: number }[];
   top_customers: { key: string; units: number }[];
   top_categories: { key: string; units: number }[];
+  top_models: { key: string; units: number; fill: string }[];
+  top_licenses: { key: string; units: number }[];
+  daily_trend: { date: string; units: number; orders: number }[];
+  scatter_data: { x: number; y: number; z: number; name: string }[]; // x=date(ts), y=qty, z=size/category
   sample_rows: MedFlowRow[];
 }
 

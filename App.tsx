@@ -2,10 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Settings, LayoutDashboard, Share2, Bot, Database, 
   Activity, FileText, Palette, Globe, Sun, Moon,
-  Shuffle, Zap, TrendingUp, Search, Info, Upload, FileUp, List, ChevronDown, ChevronRight
+  Shuffle, Zap, TrendingUp, Search, Info, Upload, FileUp, List, ChevronDown, ChevronRight,
+  PieChart as PieChartIcon
 } from 'lucide-react';
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
+  PieChart, Pie, Cell, LineChart, Line, RadialBarChart, RadialBar, Legend, ScatterChart, Scatter
 } from 'recharts';
 
 import { 
@@ -381,10 +383,12 @@ function App() {
                         ))}
                     </div>
 
-                    {/* Charts */}
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="bg-[var(--mf-card)] border border-[var(--mf-border)] p-6 rounded-2xl h-[400px]">
-                            <h3 className="text-lg font-bold mb-6">Top Categories</h3>
+                    {/* Charts Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                        
+                        {/* 1. Existing: Top Categories */}
+                        <div className="bg-[var(--mf-card)] border border-[var(--mf-border)] p-6 rounded-2xl h-[350px] col-span-2">
+                            <h3 className="text-lg font-bold mb-4">Top Categories</h3>
                             <ResponsiveContainer width="100%" height="90%">
                                 <BarChart data={summary.top_categories} layout="vertical">
                                     <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
@@ -398,10 +402,12 @@ function App() {
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
-                        <div className="bg-[var(--mf-card)] border border-[var(--mf-border)] p-6 rounded-2xl h-[400px]">
-                            <h3 className="text-lg font-bold mb-6">Volume Trend</h3>
+
+                        {/* 2. Existing: Volume Trend */}
+                        <div className="bg-[var(--mf-card)] border border-[var(--mf-border)] p-6 rounded-2xl h-[350px] col-span-2">
+                            <h3 className="text-lg font-bold mb-4">Volume Trend (By Supplier)</h3>
                              <ResponsiveContainer width="100%" height="90%">
-                                <AreaChart data={summary.top_suppliers /* Using dummy mapping for trend demo as real dates need full agg */}>
+                                <AreaChart data={summary.top_suppliers}>
                                     <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
                                     <XAxis dataKey="key" tick={{fill: 'var(--mf-text)', fontSize: 10}} />
                                     <YAxis tick={{fill: 'var(--mf-text)'}}/>
@@ -410,6 +416,121 @@ function App() {
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
+
+                        {/* 3. New: Supplier Distribution (Donut) */}
+                        <div className="bg-[var(--mf-card)] border border-[var(--mf-border)] p-6 rounded-2xl h-[350px] col-span-1">
+                            <h3 className="text-lg font-bold mb-4">Supplier Share</h3>
+                            <ResponsiveContainer width="100%" height="85%">
+                                <PieChart>
+                                    <Pie
+                                        data={summary.top_suppliers}
+                                        innerRadius={50}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="units"
+                                        nameKey="key"
+                                    >
+                                        {summary.top_suppliers.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={currentStyle.palette[index % currentStyle.palette.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip contentStyle={{backgroundColor: 'var(--mf-card)', borderColor: 'var(--mf-border)'}}/>
+                                    <Legend wrapperStyle={{fontSize: '10px', paddingTop: '10px'}}/>
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                        {/* 4. New: Top Customers (Horizontal Bar) */}
+                        <div className="bg-[var(--mf-card)] border border-[var(--mf-border)] p-6 rounded-2xl h-[350px] col-span-1">
+                            <h3 className="text-lg font-bold mb-4">Top Customers</h3>
+                            <ResponsiveContainer width="100%" height="90%">
+                                <BarChart data={summary.top_customers} layout="vertical">
+                                    <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} horizontal={false}/>
+                                    <XAxis type="number" hide />
+                                    <YAxis dataKey="key" type="category" width={60} tick={{fill: 'var(--mf-text)', fontSize: 10}} />
+                                    <Tooltip cursor={{fill: 'transparent'}} contentStyle={{backgroundColor: 'var(--mf-card)', borderColor: 'var(--mf-border)'}}/>
+                                    <Bar dataKey="units" fill={currentStyle.palette[2]} radius={[0,4,4,0]} barSize={20}/>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                         {/* 5. New: Top Models (Radial Bar) */}
+                        <div className="bg-[var(--mf-card)] border border-[var(--mf-border)] p-6 rounded-2xl h-[350px] col-span-1">
+                            <h3 className="text-lg font-bold mb-4">Top Models</h3>
+                            <ResponsiveContainer width="100%" height="90%">
+                                <RadialBarChart 
+                                    innerRadius="10%" 
+                                    outerRadius="90%" 
+                                    data={summary.top_models} 
+                                    startAngle={180} 
+                                    endAngle={0}
+                                >
+                                    <RadialBar label={{ position: 'insideStart', fill: '#fff', fontSize: '10px' }} background dataKey="units">
+                                        {summary.top_models.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={currentStyle.palette[index % currentStyle.palette.length]} />
+                                        ))}
+                                    </RadialBar>
+                                    <Legend iconSize={10} wrapperStyle={{fontSize: '10px'}} layout="vertical" verticalAlign="middle" align="right" />
+                                    <Tooltip contentStyle={{backgroundColor: 'var(--mf-card)', borderColor: 'var(--mf-border)'}}/>
+                                </RadialBarChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                         {/* 6. New: Daily Order Frequency (Line) */}
+                         <div className="bg-[var(--mf-card)] border border-[var(--mf-border)] p-6 rounded-2xl h-[350px] col-span-1">
+                            <h3 className="text-lg font-bold mb-4">Daily Order Frequency</h3>
+                            <ResponsiveContainer width="100%" height="90%">
+                                <LineChart data={summary.daily_trend}>
+                                    <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+                                    <XAxis dataKey="date" tick={{fill: 'var(--mf-text)', fontSize: 9}} angle={-45} textAnchor="end" height={60}/>
+                                    <YAxis tick={{fill: 'var(--mf-text)', fontSize: 10}}/>
+                                    <Tooltip contentStyle={{backgroundColor: 'var(--mf-card)', borderColor: 'var(--mf-border)'}}/>
+                                    <Line type="step" dataKey="orders" stroke={currentStyle.palette[3]} strokeWidth={2} dot={false} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                         {/* 7. New: License Usage (Bar) */}
+                         <div className="bg-[var(--mf-card)] border border-[var(--mf-border)] p-6 rounded-2xl h-[350px] col-span-2">
+                            <h3 className="text-lg font-bold mb-4">License Volume</h3>
+                            <ResponsiveContainer width="100%" height="90%">
+                                <BarChart data={summary.top_licenses}>
+                                    <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} vertical={false}/>
+                                    <XAxis dataKey="key" tick={{fill: 'var(--mf-text)', fontSize: 10}} interval={0} angle={-10} textAnchor="end"/>
+                                    <YAxis tick={{fill: 'var(--mf-text)'}}/>
+                                    <Tooltip contentStyle={{backgroundColor: 'var(--mf-card)', borderColor: 'var(--mf-border)'}}/>
+                                    <Bar dataKey="units" fill={currentStyle.palette[4]} radius={[4,4,0,0]} barSize={40}>
+                                        {summary.top_licenses.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={currentStyle.palette[index % currentStyle.palette.length]} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+
+                         {/* 8. New: Orders Scatter (Date vs Qty) */}
+                         <div className="bg-[var(--mf-card)] border border-[var(--mf-border)] p-6 rounded-2xl h-[350px] col-span-2">
+                            <h3 className="text-lg font-bold mb-4">Order Size Distribution</h3>
+                            <ResponsiveContainer width="100%" height="90%">
+                                <ScatterChart>
+                                    <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+                                    <XAxis type="number" dataKey="x" name="Date" domain={['auto', 'auto']} 
+                                        tickFormatter={(unix) => new Date(unix).toLocaleDateString()} 
+                                        tick={{fill: 'var(--mf-text)', fontSize: 10}}
+                                    />
+                                    <YAxis type="number" dataKey="y" name="Qty" tick={{fill: 'var(--mf-text)'}}/>
+                                    <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{backgroundColor: 'var(--mf-card)', borderColor: 'var(--mf-border)'}}
+                                        labelFormatter={(unix) => new Date(unix).toLocaleDateString()}
+                                    />
+                                    <Scatter name="Orders" data={summary.scatter_data} fill={currentStyle.accent}>
+                                        {summary.scatter_data.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={currentStyle.palette[index % currentStyle.palette.length]} />
+                                        ))}
+                                    </Scatter>
+                                </ScatterChart>
+                            </ResponsiveContainer>
+                        </div>
+
                     </div>
                 </div>
             )}
